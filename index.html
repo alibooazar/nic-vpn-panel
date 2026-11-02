@@ -43,10 +43,11 @@
 <div class="foot">NIC VPN • پنل مدیریت</div></div><div class="toast" id="toast"></div>
 <script>
 const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();
+const API_BASE='https://knights-medline-experienced-sip.trycloudflare.com/api';
 const initData=tg?.initData||'';let cache={};
 const $=id=>document.getElementById(id);const fa=n=>Number(n||0).toLocaleString('fa-IR');
 function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',2600)}
-async function api(path,opts={}){const r=await fetch('/api'+path,{...opts,headers:{'Content-Type':'application/json','X-Telegram-Init-Data':initData,...opts.headers}});let d={};try{d=await r.json()}catch{}if(!r.ok)throw new Error(d.detail||'خطا در ارتباط با سرور');return d}
+async function api(path,opts={}){const r=await fetch(API_BASE+path,{...opts,headers:{'Content-Type':'application/json','X-Telegram-Init-Data':initData,...opts.headers}});let d={};try{d=await r.json()}catch{}if(!r.ok)throw new Error(d.detail||'خطا در ارتباط با سرور');return d}
 function showPanel(name){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));const el=$('panel-'+name);if(el){el.classList.add('active');el.scrollIntoView({behavior:'smooth',block:'start'})}loadPanel(name)}
 document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.panel)));document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.panel').classList.remove('active')));
 async function loadDashboard(){try{const d=await api('/dashboard');cache.dashboard=d;$('users-count').textContent=fa(d.users);$('orders-count').textContent=fa(d.orders);$('pending-count').textContent=fa(d.pending);$('sales-count').textContent=fa(d.sales);$('hello').textContent='سلام '+(d.name||'مدیر عزیز')+' 👋';$('updated').textContent='به‌روزرسانی شد';$('stats-detail').innerHTML=`<div class="item"><span>کاربران</span><b>${fa(d.users)}</b></div><div class="item"><span>کل سفارش‌ها</span><b>${fa(d.orders)}</b></div><div class="item"><span>در انتظار</span><b>${fa(d.pending)}</b></div><div class="item"><span>تحویل‌شده</span><b>${fa(d.delivered)}</b></div><div class="item"><span>فروش تحویل‌شده</span><b>${fa(d.sales)} تومان</b></div>`}catch(e){toast(e.message);$('updated').textContent='خطا در دریافت اطلاعات'}}
