@@ -52,7 +52,24 @@ function showPanel(name){document.querySelectorAll('.panel').forEach(x=>x.classL
 document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.panel)));document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.panel').classList.remove('active')));
 async function loadDashboard(){try{const d=await api('/dashboard');cache.dashboard=d;$('users-count').textContent=fa(d.users);$('orders-count').textContent=fa(d.orders);$('pending-count').textContent=fa(d.pending);$('sales-count').textContent=fa(d.sales);$('hello').textContent='سلام '+(d.name||'مدیر عزیز')+' 👋';$('updated').textContent='به‌روزرسانی شد';$('stats-detail').innerHTML=`<div class="item"><span>کاربران</span><b>${fa(d.users)}</b></div><div class="item"><span>کل سفارش‌ها</span><b>${fa(d.orders)}</b></div><div class="item"><span>در انتظار</span><b>${fa(d.pending)}</b></div><div class="item"><span>تحویل‌شده</span><b>${fa(d.delivered)}</b></div><div class="item"><span>فروش تحویل‌شده</span><b>${fa(d.sales)} تومان</b></div>`}catch(e){toast(e.message);$('updated').textContent='خطا در دریافت اطلاعات'}}
 async function loadPanel(n){try{if(n==='users'){const d=await api('/users');$('users-list').innerHTML=d.items.length?d.items.map(u=>`<div class="item"><div><b>${esc(u.name||'بدون نام')}</b><div class="sub">${u.username?'@'+esc(u.username)+' · ':''}${u.id}</div></div></div>`).join(''):'<div class="empty">کاربری ثبت نشده است.</div>'}
-if(n==='orders'){const d=await api('/orders');$('orders-list').innerHTML=d.items.length?d.items.map(o=>`<div class="item"><div><b>سفارش ${esc(o.id)}</b><div class="sub">${esc(o.product)} · ${esc(o.plan)} · ${fa(o.total)} تومان</div><div class="sub">کاربر ${o.user_id} · ${esc(o.status)}</div></div><span>${o.status==='pending'?'⏳':'✓'}</span></div>`).join(''):'<div class="empty">سفارشی ثبت نشده است.</div>'}
+if(n==='orders'){
+const d=await api('/orders');
+const items=Array.isArray(d)?d:(d.items||[]);
+$('orders-list').innerHTML=items.length?items.map(o=>`
+<div class="item">
+  <div>
+    <b>سفارش ${esc(o.order_id)}</b>
+    <div class="sub">${esc(o.product)} · ${esc(o.plan)} · ${fa(o.total)} تومان</div>
+    <div class="sub">کاربر ${o.user_id} · ${esc(o.status)}</div>
+    <div class="sub">شروع: ${esc(o.started_at||'ثبت نشده')}</div>
+    <div class="sub">انقضا: ${esc(o.expires_at||'ثبت نشده')}</div>
+    <div class="sub">روز باقی‌مانده: ${o.remaining_days===null?'ثبت نشده':fa(o.remaining_days)}</div>
+    <div class="sub">وضعیت سرویس: ${esc(o.service_status||'نامشخص')}</div>
+  </div>
+  <span>${o.status==='pending'?'⏳':'✓'}</span>
+</div>`).join(''):'<div class="empty">سفارشی ثبت نشده است.</div>';
+}
+:'<div class="empty">سفارشی ثبت نشده است.</div>'}
 if(n==='admins'){const d=await api('/admins');$('admins-list').innerHTML=d.items.map(a=>`<div class="item"><div><b>${a.id===d.owner?'👑 مدیر اصلی':'👤 مدیر'}</b><div class="sub">شناسه ${a.id}</div></div>${a.id===d.owner?'':`<button class="action danger" onclick="removeAdmin(${a.id})">حذف دسترسی</button>`}</div>`).join('');$('owner-note').textContent=d.is_owner?'فقط مدیر اصلی می‌تواند مدیر اضافه یا حذف کند.':'فقط مدیر اصلی اجازه تغییر فهرست مدیران را دارد.';$('add-admin-box').style.display=d.is_owner?'block':'none';if(d.is_owner){const u=await api('/users');const current=new Set(d.items.map(a=>a.id));const candidates=u.items.filter(x=>!current.has(x.id));$('candidate').innerHTML=candidates.map(x=>`<option value="${x.id}">${esc(x.name||'بدون نام')} — ${x.id}</option>`).join('');if(!candidates.length)$('candidate').innerHTML='<option value="">کاربر جدیدی برای افزودن نیست</option>'}}
 if(n==='prices'){const d=await api('/prices');$('prices-list').innerHTML=d.items.map((p,i)=>`<div class="item"><div><b>${esc(p.plan)} · ${p.device==='android'?'اندروید':'آیفون'}</b><div class="sub">قیمت فعلی: ${fa(p.price)} تومان</div></div><button class="action" onclick="editPrice('${encodeURIComponent(p.plan)}','${p.device}',${p.price})">ویرایش</button></div>`).join('')}}catch(e){toast(e.message)}}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
