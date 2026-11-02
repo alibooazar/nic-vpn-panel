@@ -45,6 +45,7 @@
 const tg=window.Telegram?.WebApp;tg?.ready();tg?.expand();
 const API_BASE='https://flu-taking-analyst-rate.trycloudflare.com/api';
 const initData=tg?.initData||'';let cache={};
+alert('Telegram WebApp: '+(tg?'YES':'NO')+' | initData: '+(initData?'RECEIVED':'EMPTY'));
 const $=id=>document.getElementById(id);const fa=n=>Number(n||0).toLocaleString('fa-IR');
 function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',2600)}
 async function api(path,opts={}){const r=await fetch(API_BASE+path,{...opts,headers:{'Content-Type':'application/json','X-Telegram-Init-Data':initData,...opts.headers}});let d={};try{d=await r.json()}catch{}if(!r.ok)throw new Error(d.detail||'خطا در ارتباط با سرور');return d}
