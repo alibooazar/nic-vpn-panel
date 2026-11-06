@@ -65,7 +65,7 @@ const oid=decodeURIComponent(id);
 const question=action==='approve'?'پرداخت این سفارش تأیید شود؟':'این سفارش رد شود؟';                      if(!confirm(question))return;
 try{
 const d=await api('/orders/decision',{method:'POST',body:JSON.stringify({order_id:oid,action})});
-toast(action==='approve'?'پرداخت تأیید شد؛ پیام تحویل برای مدیر ارسال شد.':(d.notification_sent?'سفارش رد شد و مشتری مطلع شد.':'سفارش رد شد؛ ارسال پیام به مشتری ناموفق بود.'));
+toast(action==='approve'?'پرداخت تأیید شد؛ پیام تحویل برای مدیر ارسال شد.':action==='deliver'?'درخواست تحویل برای مدیر ارسال شد.':(d.notification_sent?'سفارش رد شد و مشتری مطلع شد.':'سفارش رد شد؛ ارسال پیام به مشتری ناموفق بود.'));
 await loadPanel('orders');
 await loadDashboard();
 }catch(e){toast(e.message)}
